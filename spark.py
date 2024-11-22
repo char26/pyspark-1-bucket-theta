@@ -1,6 +1,6 @@
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import SparkSession, DataFrame, Column
 from pyspark import SparkConf
-from obt import Mapper
+from obt import Matrix
 
 # conf = SparkConf()
 
@@ -9,10 +9,12 @@ from obt import Mapper
 # spark = SparkSession.builder.config(conf=conf).getOrCreate()
 
 # df: DataFrame = spark.read.option("header", True).csv("./epinions_small.csv")
-# s = df["fromNodeId"]
-# t = df["toNodeId"]
-mapper = Mapper(None, 6, None, 6, 36)
-print(mapper._get_regions(row=6))
+# card_s = df.count()
+# card_t = df.count()
+
+
+matrix = Matrix(6, 6, 36)
+print(matrix.get_regions(col=4))
 
 # df.printSchema()
 # print(df.count()**2)
