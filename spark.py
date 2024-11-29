@@ -1,20 +1,69 @@
-from pyspark.sql import SparkSession, DataFrame, Column
+from pyspark.sql import SparkSession, DataFrame
 from pyspark import SparkConf
 from obt import Matrix
+from random import randint
 
-# conf = SparkConf()
+reducers = 9 # TODO: ONLY 1, 9, and 36 GET THE RIGHT ANSWER.......
 
-# conf.set("spark.default.parallelism", 200)
+conf = SparkConf()
+conf.set("spark.default.parallelism", reducers)
+spark: SparkSession = SparkSession.builder.config(conf=conf).getOrCreate()
+df: DataFrame = spark.read.option("header", True).csv("./epinions.csv")
+s = df.rdd
+t = df.rdd
 
-# spark = SparkSession.builder.config(conf=conf).getOrCreate()
+card_s = s.count()
+card_t = t.count()
 
-# df: DataFrame = spark.read.option("header", True).csv("./epinions_small.csv")
-# card_s = df.count()
-# card_t = df.count()
+# print(len(s.collect()))
+
+matrix = Matrix(card_s, card_t, reducers)
+
+def s_mapper(row):
+    from_node_id = row[0]
+    to_node_id = row[1]
+    matrix_row = randint(1, card_s)
+    regions = matrix.get_regions(row=matrix_row)
+    for region in regions:
+        yield (region, (from_node_id, to_node_id, 'S'))
 
 
-matrix = Matrix(6, 6, 36)
-print(matrix.get_regions(col=4))
+def t_mapper(row):
+    from_node_id = row[0]
+    to_node_id = row[1]
+    matrix_col = randint(1, card_t)
+    regions = matrix.get_regions(col=matrix_col)
+    for region in regions:
+        yield (region, (from_node_id, to_node_id, 'T'))
 
-# df.printSchema()
-# print(df.count()**2)
+s = s.flatMap(s_mapper)
+t = t.flatMap(t_mapper)
+union = s.union(t)
+
+
+def reducer(_, values: list):
+    from collections import defaultdict
+
+    s_tuples = set()
+    t_tuples = defaultdict(list)
+
+    for value in values:
+        from_node_id = value[0]
+        to_node_id = value[1]
+        origin = value[2]
+
+        if origin == 'S':
+            s_tuples.add((from_node_id, to_node_id))
+        else:
+            t_tuples[from_node_id].append(to_node_id)
+
+    join_result = []
+
+    for s_from_node_id, s_to_node_id in s_tuples:
+        if s_to_node_id in t_tuples:
+            for t_to_node_id in t_tuples[s_to_node_id]:
+                join_result.append((s_from_node_id, s_to_node_id, t_to_node_id))
+
+    return join_result
+
+print(union.groupByKey().flatMap(lambda x: reducer(x[0], list(x[1]))).count())

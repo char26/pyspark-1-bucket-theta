@@ -57,7 +57,7 @@ class Matrix():
         assert region_w is not None and region_h is not None, "Invalid region dimensions"
         self._region_w = region_w
         self._region_h = region_h
-        print(f"Region width: {self._region_w}, Region height: {self._region_h}")
+        # print(f"Region width: {self._region_w}, Region height: {self._region_h}")
 
     def get_regions(self, *, row: Optional[int] = None, col: Optional[int] = None) -> List[int]:
         """ Get the regions of the matrix that the row OR column belongs to
@@ -82,7 +82,6 @@ class Matrix():
         elif col:
             start = ceil(col/self._region_w)
             end = regions_per_col * regions_per_row
-            print(start, end, regions_per_col)
             for region in range(start, end + 1, regions_per_col):
                 regions.append(region)
 
