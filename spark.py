@@ -23,7 +23,7 @@ def s_mapper(row):
     from_node_id = row[0]
     to_node_id = row[1]
     matrix_row = randint(1, card_s)
-    regions = matrix.get_regions(row=matrix_row)
+    regions = matrix.get_row_regions(matrix_row)
     for region in regions:
         yield (region, (from_node_id, to_node_id, 'S'))
 
@@ -32,7 +32,7 @@ def t_mapper(row):
     from_node_id = row[0]
     to_node_id = row[1]
     matrix_col = randint(1, card_t)
-    regions = matrix.get_regions(col=matrix_col)
+    regions = matrix.get_col_regions(matrix_col)
     for region in regions:
         yield (region, (from_node_id, to_node_id, 'T'))
 
