@@ -76,14 +76,9 @@ class Matrix():
 
     def get_row_regions(self, row: int) -> List[int]:
         assert row <= self._card_s, "Row out of bounds"
-        regions_per_row = int(self._card_t/self._region_w)
-        column_region = ceil(row/self._region_h)
-        regions_before = (column_region - 1) * regions_per_row
-        start = regions_before + 1
-        end = int(start + regions_per_row)
-        if self._debug:
-            print(f"Start: {start}, " + f"End: {end}")
-        return(list(range(start, end)))
+        start = int(row/self._region_h) + 1
+        end = start + self._ct
+        return range(start, end)
 
     def get_col_regions(self, col: int) -> List[int]:
         assert col <= self._card_t, "Column out of bounds"
